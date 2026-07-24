@@ -49,6 +49,7 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: [
       { find: '@', replacement: srcRoot },
+      { find: 'react-sortablejs', replacement: path.resolve(__dirname, 'node_modules/react-sortablejs/dist/index.js') },
       ...srcDirectoryAliases,
     ],
   },
@@ -66,6 +67,10 @@ export default defineConfig(({ mode }) => ({
         global: 'globalThis',
       },
     },
+    include: [
+      'react-sortablejs',
+      'sortablejs'  // ← peer dependency
+    ]
   },
   server: {
     port: 3000,

@@ -13,6 +13,7 @@ import {
 import CssBaseline from '@mui/material/CssBaseline';
 import config from '../src/config';
 import 'leaflet/dist/leaflet.css';
+import {testCorsConnection} from "utils/testCors";
 
 axios.defaults.baseURL = config.baseURLApi;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
@@ -22,6 +23,9 @@ if (token) {
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+
+testCorsConnection();
+testCorsConnection();
 
 root.render(
   <LayoutProvider>
