@@ -53,7 +53,7 @@ setup_node_lts() {
 
 # Project paths
 BACKEND_DIR="./backend"
-FRONTEND_DIR="./frontend"
+FRONTEND_DIR="./frontend-admin"
 
 # Ports
 BACKEND_PORT=8000

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -10,9 +11,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/sanctum/csrf-cookie', function () {
     return response()->json(['message' => 'CSRF cookie set']);
 })->name('sanctum.csrf');
-
-// Логин
-Route::post('/auth/signin/local', [AuthController::class, 'login'])->name('auth.login');
 
 // Тест скрипта
 Route::get('/test-cors', function (Request $request) {
@@ -39,16 +37,17 @@ Route::get('/health', function () {
     ]);
 });
 
-// Sanctum protected route (for testing auth)
-//Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//    return $request->user();
-//});
+// Логин
+Route::post('/auth/login', [AuthController::class, 'login'])->name('auth.login');
 
-
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me'])->name('auth.me');
+    Route::post('/auth/register', [AuthController::class, 'register'])->name('auth.register');
     Route::post('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
     Route::get('/auth/user', [AuthController::class, 'user'])->name('auth.user');
+
+    // Управление пользователями (только для админов)
+    Route::apiResource('/users', UserController::class);
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
 });

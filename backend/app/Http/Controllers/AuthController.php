@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -42,6 +43,47 @@ class AuthController extends Controller
             'user' => $user,
             'token' => $token,
         ]);
+    }
+
+    public function register(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'name' => ['string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:8'], // 'confirmed' ожидает password_confirmation
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Ошибка валидации',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Создание пользователя
+        $user = User::create([
+            'name' => $request->name ?: explode('@', $request->email)[0], // Автоматически генерируем name из email
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+        ]);
+
+        // Опционально: отправка email верификации
+        // if (config('auth.must_verify_email')) {
+        //     $user->sendEmailVerificationNotification();
+        // }
+        // + в User добавить implements MustVerifyEmail
+
+        // Опционально: создание токена сразу после регистрации
+        // $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'User registered successfully',
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+                'name' => $user->name,
+            ],
+            // 'token' => $token, // Раскомментируйте, если хотите сразу авторизовать
+        ], 201);
     }
 
     public function logout(Request $request)

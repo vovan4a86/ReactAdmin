@@ -1,4 +1,5 @@
-/frontend/.env
+/frontend-admin/.env
+/frontend-website/.env
 /.idea/.gitignore
 /frontend/.nvmrc
 /.idea/blade.xml

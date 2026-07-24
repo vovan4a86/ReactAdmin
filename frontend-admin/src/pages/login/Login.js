@@ -35,13 +35,13 @@ import config from '../../config';
 const getGreeting = () => {
   const d = new Date();
   if (d.getHours() >= 4 && d.getHours() <= 12) {
-    return 'Good Morning';
+    return 'Доброе утро';
   } else if (d.getHours() >= 13 && d.getHours() <= 16) {
-    return 'Good Day';
+    return 'Добрый день ';
   } else if (d.getHours() >= 17 && d.getHours() <= 23) {
-    return 'Good Evening';
+    return 'Доброго вечера';
   } else {
-    return 'Good Night';
+    return 'Доброй ночи';
   }
 };
 
@@ -107,7 +107,7 @@ function Login() {
       <div className={classes.logotypeContainer}>
         <img src={logo} alt='logo' className={classes.logotypeImage} />
         <Typography className={classes.logotypeText}>
-          React Material Admin Full
+          React Material Admin
         </Typography>
       </div>
       <div
@@ -168,8 +168,8 @@ function Login() {
                 textColor='primary'
                 centered
               >
-                <Tab label='Login' classes={{ root: classes.tab }} />
-                <Tab label='New User' classes={{ root: classes.tab }} />
+                <Tab label='Логин' classes={{ root: classes.tab }} />
+                <Tab label='Новый пользователь' classes={{ root: classes.tab }} />
               </Tabs>
               {activeTabId === 0 && (
                 <React.Fragment>
@@ -184,45 +184,17 @@ function Login() {
                         component="div"
                         style={{ textAlign: 'center' }}
                       >
-                        This is a real app with Node.js backend - use
+                        Работает backend - используй
                         <Typography variant={'body2'} weight={'bold'}>
-                          "admin@flatlogic.com / password"
+                          "test@example.com / password"
                         </Typography>{' '}
-                        to login!
+                        для логина!
                       </Typography>
                     </Widget>
                   ) : null}
                   <Typography variant='h1' className={classes.greeting}>
-                    {getGreeting()}, User
+                    {getGreeting()}, Пользователь
                   </Typography>
-                  <Button
-                    size='large'
-                    className={classes.googleButton}
-                    onClick={() =>
-                      loginUser(
-                        userDispatch,
-                        loginValue,
-                        passwordValue,
-                        setIsLoading,
-                        setError,
-                        'google',
-                      )
-                    }
-                  >
-                    <img
-                      src={google}
-                      alt='google'
-                      className={classes.googleIcon}
-                    />
-                    &nbsp;Sign in with Google
-                  </Button>
-                  <div className={classes.formDividerContainer}>
-                    <div className={classes.formDivider} />
-                    <Typography className={classes.formDividerWord}>
-                      or
-                    </Typography>
-                    <div className={classes.formDivider} />
-                  </div>
                   <Grow
                     in={error}
                     style={
@@ -287,7 +259,7 @@ function Login() {
                         color='primary'
                         size='large'
                       >
-                        Login
+                        Войти
                       </Button>
                     )}
                     <Button
@@ -296,7 +268,7 @@ function Login() {
                       onClick={() => setIsForgot(!isForgot)}
                       className={classes.forgetButton}
                     >
-                      Forgot Password?
+                      Забыли пароль?
                     </Button>
                   </div>
                 </React.Fragment>
@@ -304,14 +276,14 @@ function Login() {
               {activeTabId === 1 && (
                 <React.Fragment>
                   <Typography variant='h1' className={classes.greeting}>
-                    Welcome!
+                    Приветствую!
                   </Typography>
                   <Typography variant='h2' className={classes.subGreeting}>
-                    Create your account
+                    Создай новый аккаунт
                   </Typography>
                   <Grow in={error}>
                     <Typography className={classes.errorMessage}>
-                      Something is wrong with your login or password :(
+                      Что-то не так с логином и паролем :(
                     </Typography>
                   </Grow>
                   <Input
@@ -325,7 +297,7 @@ function Login() {
                     value={nameValue}
                     onChange={(e) => setNameValue(e.target.value)}
                     margin='normal'
-                    placeholder='Full Name'
+                    placeholder='Полное имя'
                     type='email'
                     fullWidth
                   />
@@ -340,7 +312,7 @@ function Login() {
                     value={loginValue}
                     onChange={(e) => setLoginValue(e.target.value)}
                     margin='normal'
-                    placeholder='Email Adress'
+                    placeholder='Email адрес'
                     type='email'
                     fullWidth
                   />
@@ -355,7 +327,7 @@ function Login() {
                     value={passwordValue}
                     onChange={(e) => setPasswordValue(e.target.value)}
                     margin='normal'
-                    placeholder='Password'
+                    placeholder='Пароль'
                     type='password'
                     fullWidth
                   />
@@ -367,6 +339,7 @@ function Login() {
                         onClick={() =>
                           registerUser(
                             userDispatch,
+                            nameValue,
                             loginValue,
                             passwordValue,
                             navigate,
@@ -385,57 +358,26 @@ function Login() {
                         fullWidth
                         className={classes.createAccountButton}
                       >
-                        Create your account
+                        Создать аккаунт
                       </Button>
                     )}
                   </div>
-                  <div className={classes.formDividerContainer}>
-                    <div className={classes.formDivider} />
-                    <Typography className={classes.formDividerWord}>
-                      or
-                    </Typography>
-                    <div className={classes.formDivider} />
-                  </div>
-                  <Button
-                    size='large'
-                    className={classnames(
-                      classes.googleButton,
-                      classes.googleButtonCreating,
-                    )}
-                    onClick={() =>
-                      loginUser(
-                        userDispatch,
-                        loginValue,
-                        passwordValue,
-                        setIsLoading,
-                        setError,
-                        'google',
-                      )
-                    }
-                  >
-                    <img
-                      src={google}
-                      alt='google'
-                      className={classes.googleIcon}
-                    />
-                    &nbsp;Sign in with Google
-                  </Button>
                 </React.Fragment>
               )}
             </>
           )}
         </div>
         <Typography color='primary' className={classes.copyright}>
-          2014-{new Date().getFullYear()}{' '}
+          {new Date().getFullYear()}{' '}
           <a
             style={{ textDecoration: 'none', color: 'inherit' }}
-            href='https://flatlogic.com'
+            href='https://lyutikoff.ru'
             rel='noopener noreferrer'
             target='_blank'
           >
-            Flatlogic
+            Luytikoff
           </a>
-          , LLC. All rights reserved.
+          , Все права защищены.
         </Typography>
       </div>
     </Grid>

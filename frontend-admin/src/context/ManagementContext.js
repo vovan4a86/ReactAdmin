@@ -291,7 +291,7 @@ const actions = {
       const record = findMockUser(id);
 
       if (!record) {
-        showSnackbar({ type: 'error', message: 'User not found' });
+        showSnackbar({ type: 'error', message: 'Пользователь не найден' });
         dispatch({
           type: 'USERS_FORM_FIND_ERROR',
         });

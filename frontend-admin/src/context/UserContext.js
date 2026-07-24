@@ -126,22 +126,15 @@ function loginUser(
         config.redirectUrl;
     } else if (login.length > 0 && password.length > 0) {
       axios
-        .post('/auth/signin/local', { email: login, password })
+        .post('/auth/login', { email: login, password })
         .then(async (res) => {
-          console.log('✅ Успешный логин:', res.data);
-          // const token = res.data;
+          console.log('✅ Успешный логин:', res.data.token);
 
           const token = res.data.token || res.data;
           console.log('Получен токен:', token);
 
-          // console.log('Получен токен:', token);
-
           // Сохраняем токен
           receiveToken(token, dispatch);
-
-          // Проверяем, что заголовок установлен
-          // console.log('Заголовок Authorization после receiveToken:',
-          //     axios.defaults.headers.common['Authorization']);
 
           setError(null);
           setIsLoading(false);
@@ -150,14 +143,6 @@ function loginUser(
           console.log('doInit завершен');
         })
         .catch(() => {
-          // console.log('API URL:', config.baseURLApi);
-          // console.log('Full URL:', `${config.baseURLApi}/auth/signin/local`);
-          //
-          // console.log('❌ Ошибка:');
-          // console.log('Статус:', error.response?.status);
-          // console.log('Данные:', error.response?.data);
-          // console.log('Заголовки:', error.response?.headers);
-          // console.log('Полный ответ:', error.response);
           setError(true);
           setIsLoading(false);
         });
@@ -227,10 +212,6 @@ export function receiveToken(token, dispatch) {
 
 async function findMe() {
   if (config.isBackend) {
-    console.log('=== findMe() called ===');
-    console.log('Токен из localStorage:', localStorage.getItem('token'));
-    console.log('Заголовки axios:', axios.defaults.headers.common);
-
     const response = await axios.get('/auth/me');
     return response.data;
   } else {
@@ -288,6 +269,7 @@ export function doInit() {
 
 export function registerUser(
   dispatch,
+  name,
   login,
   password,
   navigate,
@@ -301,7 +283,7 @@ export function registerUser(
       });
       if (login.length > 0 && password.length > 0) {
         axios
-          .post('/auth/signup', { email: login, password })
+          .post('/auth/register', { name, email: login, password })
           .then(() => {
             dispatch({
               type: 'REGISTER_SUCCESS',
@@ -309,15 +291,15 @@ export function registerUser(
             showSnackbar({
               type: 'success',
               message:
-                "You've been registered successfully. Please check your email for verification link",
+                "Вы успешно зарегистрированы. Подтвердите ваш email перейдя по ссылке в письме.",
             });
-            navigate('/login');
+            navigate('/dashboard');
           })
           .catch((err) => {
             dispatch(authError(err.response.data));
           });
       } else {
-        dispatch(authError('Something was wrong. Try again'));
+        dispatch(authError('Что-то не так. Попробуйте еще раз.'));
       }
     }
   };
