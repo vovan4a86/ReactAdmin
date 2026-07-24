@@ -1,0 +1,14 @@
+/frontend/.env
+/.idea/.gitignore
+/frontend/.nvmrc
+/.idea/blade.xml
+/.idea/codeception.xml
+/.idea/dataSources.xml
+/.idea/laravel-idea.xml
+/.idea/modules.xml
+/.idea/php.xml
+/.idea/phpspec.xml
+/.idea/phpunit.xml
+/.idea/inspectionProfiles/Project_Default.xml
+/.idea/ReactLaravel12.iml
+/.idea/vcs.xml
