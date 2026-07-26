@@ -112,7 +112,7 @@ class ApiClient {
      * Поменяете только этот метод — и весь код работает.
      */
     getToken() {
-        return localStorage.getItem('auth-token')
+        return localStorage.getItem('auth_token')
     }
 
     /**
@@ -217,7 +217,7 @@ class ApiClient {
          */
         if (!response.ok) {
             if (response.status === 401) {
-                localStorage.removeItem('auth-token')
+                localStorage.removeItem('auth_token')
                 window.location.href = '/login'
             }
 

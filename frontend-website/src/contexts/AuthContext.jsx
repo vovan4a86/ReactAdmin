@@ -18,7 +18,8 @@
  * const { user, logout } = useAuthContext();
  * <button onClick={logout}>Выйти из {user.name}</button>
  */
-import {createContext, useContext, useState, useCallback} from 'react'
+import {createContext, useContext, useState, useCallback, useEffect} from 'react';
+import {websiteAPI} from '../services/api';
 
 // ============================================================
 // ШАГ 1: СОЗДАЁМ ХРАНИЛИЩЕ
@@ -26,7 +27,7 @@ import {createContext, useContext, useState, useCallback} from 'react'
 // createContext() создаёт "пустой склад" для данных.
 // undefined означает "склад пустой, ничего не положили".
 // Это как объявить переменную, но не присвоить ей значение.
-const AuthContext = createContext(undefined)
+const AuthContext = createContext(null);
 
 // ============================================================
 // ШАГ 2: СОЗДАЁМ ПОСТАВЩИКА (Provider)
@@ -46,16 +47,39 @@ export function AuthProvider({children}) {
     // user — объект с данными вошедшего пользователя
     // null = "никто не вошёл"
     // { id: 1, name: "Иван", email: "ivan@mail.ru" } = "пользователь вошёл"
-    const [user, setUser] = useState(null)
+    const [user, setUser] = useState(null);
+    const [token, setToken] = useState(() => localStorage.getItem('auth_token') || null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // token — JWT-токен для запросов к API
-    // При первой загрузке проверяем localStorage:
-    // если там есть токен с прошлого визита — используем его
-    // () => localStorage.getItem('auth-token') — это ленивая инициализация
-    // Она выполнится только ОДИН раз при создании компонента
-    const [token, setToken] = useState(() => {
-        localStorage.getItem('auth-token')
-    })
+    // Инициализация - проверяем токен при загрузке
+    useEffect(() => {
+        const initAuth = async () => {
+            const savedToken = localStorage.getItem('auth_token');
+
+            if (!savedToken) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                // Проверяем валидность токена, запрашивая данные пользователя
+                const response = await websiteAPI.getMe('/auth/me');
+                setUser(response.data.user);
+                setToken(savedToken);
+            } catch (err) {
+                // Токен невалидный - очищаем
+                console.error('Auth initialization failed:', err);
+                localStorage.removeItem('auth-token');
+                setToken(null);
+                setUser(null);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        initAuth();
+    }, []); // Только при монтировании
 
     // ----------------------------------------------------------
     // МЕТОДЫ (Actions)
@@ -75,33 +99,88 @@ export function AuthProvider({children}) {
      * Мы не знаем, когда сервер ответит: 10 мс или 3 секунды.
      */
     const login = useCallback(async (email, password) => {
-        // Отправляем POST-запрос на сервер Laravel
-        // ✅ ПРАВИЛЬНО: здесь остаётся fetch, + работает proxy на back (vite.config)
-        const response = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({email, password}),
-        })
+        setError(null);
 
-        // Сервер возвращает JSON: { token: "abc.def.ghi", user: { id: 1, name: "Иван" } }
-        const data = await response.json
+        try {
+            const { data } = await websiteAPI.login(email, password);
+            // const { status } = await websiteAPI.test();
+            // console.log(status);
+            const { token: newToken, user: userData } = data;
 
-        // Обновляем состояние — React перерендерит все компоненты,
-        // которые используют этот контекст
-        setToken(data.token)
-        setUser(data.user)
+            // Обновляем состояние — React перерендерит все компоненты,
+            // которые используют этот контекст
+            localStorage.setItem('auth_token', newToken);
+            setToken(newToken);
+            setUser(userData);
 
-        // Сохраняем токен в localStorage браузера
-        // localStorage НЕ стирается при закрытии вкладки/браузера
-        // Это позволяет оставаться залогиненым после перезагрузки страницы
-        localStorage.setItem('auth-token', data.token)
-    }, []) // пустой массив зависимостей = функция создаётся один раз
+            return { success: true, user: userData };
+        } catch (err) {
+            const message = err.response?.data?.message || 'Ошибка входа';
+            const errors = err.response?.data?.errors || {};
 
-    const logout = useCallback(() => {
-        setToken(null)
-        setUser(null)
-        localStorage.removeItem('auth-token')
+            setError(message);
+
+            return {
+                success: false,
+                message,
+                errors
+            };
+        }
+
+    }, []) // useCallback без зависимостей, так как использует setState (стабильные ссылки)
+
+    // Register
+    const register = useCallback(async ({ name, email, password, password_confirmation }) => {
+        setError(null);
+
+        try {
+            const { data } = await websiteAPI.register({
+                name,
+                email,
+                password,
+                password_confirmation,
+            });
+
+            const { token: newToken, user: userData } = data;
+
+            localStorage.setItem('auth-token', newToken);
+            setToken(newToken);
+            setUser(userData);
+
+            return { success: true, user: userData };
+        } catch (err) {
+            const message = err.response?.data?.message || 'Registration failed';
+            const errors = err.response?.data?.errors || {};
+
+            setError(message);
+
+            return {
+                success: false,
+                message,
+                errors
+            };
+        }
+    }, []);
+
+    const logout = useCallback(async () => {
+        try {
+            // Пытаемся вызвать API logout
+            await websiteAPI.logout();
+        } catch (err) {
+            console.error('Logout API error:', err)
+        } finally {
+            // Всегда очищаем локальные данные
+            localStorage.removeItem('auth-token');
+            setToken(null);
+            setUser(null);
+            setError(null);
+        }
     }, [])
+
+    // Обновление данных пользователя
+    const updateUser = useCallback((userData) => {
+        setUser(prev => prev ? { ...prev, ...userData } : userData);
+    }, []);
 
     // ----------------------------------------------------------
     // ФОРМИРУЕМ ОБЪЕКТ ДЛЯ ПЕРЕДАЧИ В КОНТЕКСТ
@@ -115,9 +194,15 @@ export function AuthProvider({children}) {
     const value = {
         user,              // данные пользователя
         token,             // JWT-токен для API-запросов
-        isAuthenticated: !!token,  // true/false — вошёл или нет
+        loading,
+        error,
+        isAuthenticated: !!token && !!user,  // true/false — вошёл или нет
+        isAdmin: user?.role === 'admin' || user?.is_admin === true,
         login,             // функция входа
         logout,            // функция выхода
+        register,
+        updateUser,
+        setError
     }
 
     // ----------------------------------------------------------
